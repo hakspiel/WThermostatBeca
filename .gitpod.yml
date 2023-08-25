@@ -1,4 +1,0 @@
-tasks:
-    - before: pip3 install -U platformio
-      init: platformio upgrade --dev && platformio pkg update
-      command: platformio run -e wthermostat
