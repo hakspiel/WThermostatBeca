@@ -1,12 +1,13 @@
 #ifndef BECAMCU_H
-#define	BECAMCU_H 
+#define	BECAMCU_H
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
-#include "../lib/WAdapter/WAdapter/WDevice.h"
-#include "../lib/WAdapter/WAdapter/WPage.h"
+#include "WDevice.h"
+#include "WPage.h"
 #include "WClock.h"
+
 
 const static char HTTP_CONFIG_SCHTAB_HEAD[]         PROGMEM = R"=====(
 	<h2>Schedules</h2>
@@ -32,11 +33,12 @@ const static char HTTP_CONFIG_SCHTAB_FOOT[]         PROGMEM = R"=====(
 // see https://www.home-assistant.io/docs/mqtt/discovery/ 
 // and https://www.home-assistant.io/integrations/climate.mqtt/
 // LWT = Last Will & Testament
+
 const static char MQTT_HASS_AUTODISCOVERY_CLIMATE[]         PROGMEM = R"=====(
 {
-"name":"%s",
+"name":"Floor %s",
 "unique_id": "%s",
-"dev":{"ids":["%s"],"name":"%s","mdl":"%s","sw":"%s","mf":"WThermostatBeca"},
+"dev":{"ids":["%s"],"name":"%s","mdl":"%s","sw":"%s","mf":"Beca"},
 "~": "%s",
 "avty_t":"~/tele/LWT",
 "pl_avail":"Online",
@@ -61,11 +63,45 @@ const static char MQTT_HASS_AUTODISCOVERY_CLIMATE[]         PROGMEM = R"=====(
 "modes":["heat","auto","off"]
 }
 )=====";
+
+
+const static char MQTT_HASS_AUTODISCOVERY_CLIMATE2[]         PROGMEM = R"=====(
+{
+"name":"Floor %s",
+"unique_id": "%s",
+"dev":{"ids":["%s"],"name":"%s","mdl":"%s","sw":"%s","configuration_url":"%s","mf":"Beca"},
+"~": "%s",
+"avty_t":"~/tele/LWT",
+"pl_avail":"Online",
+"pl_not_avail":"Offline",
+"act_t":"~/stat/things/thermostat/properties",
+"act_tpl":"{{value_json.action}}",
+"mode_cmd_t":"~/cmnd/things/thermostat/properties/mode",
+"mode_stat_t":"~/stat/things/thermostat/properties",
+"mode_stat_tpl":"{{value_json.mode}}",
+"temp_cmd_t":"~/cmnd/things/thermostat/properties/targetTemperature",
+"temp_stat_t":"~/stat/things/thermostat/properties",
+"temp_stat_tpl":"{{value_json.targetTemperature}}",
+"curr_temp_t":"~/stat/things/thermostat/properties",
+"curr_temp_tpl":"{{value_json.temperature}}",
+"pr_mode_cmd_t":"~/cmnd/things/thermostat/properties/preset",
+"pr_mode_stat_t":"~/stat/things/thermostat/properties",
+"pr_mode_val_tpl":"{{value_json.preset}}",
+"pr_modes":["away"],
+"min_temp":5,
+"max_temp":"35",
+"temp_step":"%s",
+"modes":["heat","auto","off"]
+}
+)=====";
+
+
+
 const static char MQTT_HASS_AUTODISCOVERY_AIRCO[]         PROGMEM = R"=====(
 {
-"name":"%s",
+"name":"Airco %s",
 "unique_id": "%s",
-"dev":{"ids":["%s"],"name":"%s","mdl":"%s","sw":"%s","mf":"WThermostatBeca"},
+"dev":{"ids":["%s"],"name":"%s","mdl":"%s","sw":"%s","mf":"Beca"},
 "~": "%s",
 "avty_t":"~/tele/LWT",
 "pl_avail":"Online",
@@ -93,11 +129,109 @@ const static char MQTT_HASS_AUTODISCOVERY_AIRCO[]         PROGMEM = R"=====(
 "modes":["heat","cool","fan_only","off"]
 }
 )=====";
+
+const static char MQTT_HASS_AUTODISCOVERY_SENSOR_SHT_HUM[]         PROGMEM = R"=====(
+{
+"name":"%s SHT_Humidity",
+"unique_id":"%s",
+"device_class":"humidity",
+"state_class":"measurement",
+"dev":{"ids":["%s"]},
+"~":"%s",
+"stat_t":"~/stat/things/thermostat/SHT_Hum",
+"val_tpl":"{{ value|float }}",
+"unit_of_measurement":"%s"
+}
+)=====";
+
+
+const static char MQTT_HASS_AUTODISCOVERY_SENSOR_SHT_TEMP[]         PROGMEM = R"=====(
+{
+"name":"%s SHT_Temperature",
+"unique_id":"%s",
+"device_class":"temperature",
+"state_class":"measurement",
+"dev":{"ids":["%s"]},
+"~":"%s",
+"stat_t":"~/stat/things/thermostat/SHT_Temp",
+"val_tpl":"{{ value|float }}",
+"unit_of_measurement":"°C"
+}
+)=====";
+
+const static char MQTT_HASS_AUTODISCOVERY_SENSOR_SHT_DEWPOINT[]         PROGMEM = R"=====(
+{
+"name":"%s SHT_Dewpoint",
+"unique_id":"%s",
+"device_class":"temperature",
+"state_class":"measurement",
+"dev":{"ids":["%s"]},
+"~":"%s",
+"stat_t":"~/stat/things/thermostat/SHT_Dewpoint",
+"val_tpl":"{{ value|float }}",
+"unit_of_measurement":"°C"
+}
+)=====";
+
+const static char MQTT_HASS_AUTODISCOVERY_SENSOR_TARGET[]         PROGMEM = R"=====(
+{
+"name":"%s targetTemperature",
+"unique_id":"%s",
+"device_class":"temperature",
+"state_class":"measurement",
+"dev":{"ids":["%s"]},
+"~":"%s",
+"stat_t":"~/stat/things/thermostat/properties",
+"val_tpl":"{{value_json.targetTemperature}}",
+"unit_of_measurement":"°C"
+}
+)=====";
+
+const static char MQTT_HASS_AUTODISCOVERY_SENSOR_STATUS[]         PROGMEM = R"=====(
+{
+"name":"%s Status",
+"unique_id":"%s",
+"device_class":"temperature",
+"state_class":"measurement",
+"dev":{"ids":["%s"]},
+"~":"%s",
+"stat_t":"~/stat/things/thermostat/state",
+"val_tpl":"{{ value|int }}",
+"unit_of_measurement":"°C"
+}
+)=====";
+
+const static char MQTT_HASS_AUTODISCOVERY_SENSOR_STATUS2[]         PROGMEM = R"=====(
+{
+"name":"%s Relay Status",
+"unique_id":"%s",
+"device_class":"temperature",
+"state_class":"measurement",
+"dev":{"ids":["%s"]},
+"~":"%s",
+"stat_t":"~/stat/things/thermostat/properties",
+"val_tpl":"{{value_json.action2|int}}",
+"unit_of_measurement":"°C"
+}
+)=====";
+
+const static char MQTT_HASS_AUTODISCOVERY_SENSOR_IP[]         PROGMEM = R"=====(
+{
+"name":"%s IP",
+"unique_id":"%s",
+"dev":{"ids":["%s"]},
+"~":"%s",
+"stat_t":"~/stat/things/thermostat/properties",
+"val_tpl":"{{value_json.ip|string}}"
+}
+)=====";
+
 const static char MQTT_HASS_AUTODISCOVERY_SENSOR[]         PROGMEM = R"=====(
 {
 "name":"%s Temperature",
 "unique_id":"%s",
 "device_class":"temperature",
+"state_class":"measurement",
 "dev":{"ids":["%s"]},
 "~":"%s",
 "stat_t":"~/stat/things/thermostat/properties",
@@ -110,6 +244,7 @@ const static char MQTT_HASS_AUTODISCOVERY_SENSORFLOOR[]         PROGMEM = R"====
 "name":"%s Temperature Floor",
 "unique_id":"%s",
 "device_class":"temperature",
+"state_class":"measurement",
 "dev":{"ids":["%s"]},
 "~":"%s",
 "stat_t":"~/stat/things/thermostat/properties",
@@ -122,6 +257,7 @@ const static char MQTT_HASS_AUTODISCOVERY_SENSORRSSI[]         PROGMEM = R"=====
 "name":"%s WiFi RSSI",
 "unique_id":"%s",
 "device_class":"signal_strength",
+"state_class":"measurement",
 "dev":{"ids":["%s"]},
 "~":"%s",
 "stat_t":"~/stat/things/network/properties",
@@ -186,6 +322,11 @@ const char* ACTION_COOLING  PROGMEM = "cooling";
 const char* ACTION_HEATING  PROGMEM = "heating";
 const char* ACTION_IDLE  PROGMEM = "idle";
 const char* ACTION_FAN PROGMEM = "fan";
+const char* ACTION_OFF2  PROGMEM = "10";
+const char* ACTION_COOLING2  PROGMEM = "16";
+const char* ACTION_HEATING2  PROGMEM = "22";
+const char* ACTION_IDLE2  PROGMEM = "20";
+const char* ACTION_FAN2 PROGMEM = "18";
 
 const char* ID_THERMOSTAT PROGMEM = "thermostat";
 const char* NAME_THERMOSTAT PROGMEM = "Thermostat";
@@ -262,6 +403,10 @@ const byte BECABITS1_TEMP_01        =   4;
 const byte BECABITS1_TEMP_10        =   8;
 const byte BECABITS1_SWITCHBACKOFF  =  16;
 const byte BECABITS1_FLOORSENSOR    =  32;
+
+const char* myipadress;                                               //Hakspiel
+const char* State_temp;                                                                                           //Hakspiel
+float State_temp2 = 20;                                                                                           //Hakspiel
 
 const byte devicesWithHassAutodiscoverSupport[] = {
 	MODEL_BHT_002_GBLW,
@@ -509,19 +654,42 @@ public:
 		this->preset->setMqttSendChangedValues(true);
 		this->addProperty(preset);
 
-		this->action = new WProperty(PROP_ACTION, TITL_ACTION, STRING);
-		this->action->setAtType(ATTYPE_ACTION); 
-		this->action->addEnumString(ACTION_OFF);
-		this->action->addEnumString(ACTION_HEATING);
-		this->action->addEnumString(ACTION_IDLE);
+
+    this->action = new WProperty(PROP_ACTION, TITL_ACTION, STRING);              //Hakspiel
+    this->action->setAtType(ATTYPE_ACTION); 
+    this->action->addEnumString(ACTION_OFF);//off
+    this->action->addEnumString(ACTION_HEATING);//heating
+    this->action->addEnumString(ACTION_IDLE);//idle
+    if (getThermostatModel() == MODEL_BHT_002_GBLW) {
+    } else if (getThermostatModel() == MODEL_BAC_002_ALW) {
+      this->action->addEnumString(ACTION_COOLING);//cooling
+      this->action->addEnumString(ACTION_FAN);//fan
+    }
+    this->action->setMqttSendChangedValues(true);
+    this->action->setReadOnly(true);
+    this->addProperty(action);
+
+
+
+		this->action2 = new WProperty("action2", "Action2", STRING);              //Hakspiel
+		this->action2->setAtType(ATTYPE_ACTION); 
+		this->action2->addEnumString(ACTION_OFF2);//off
+		this->action2->addEnumString(ACTION_HEATING2);//heating
+		this->action2->addEnumString(ACTION_IDLE2);//idle
 		if (getThermostatModel() == MODEL_BHT_002_GBLW) {
 		} else if (getThermostatModel() == MODEL_BAC_002_ALW) {
-			this->action->addEnumString(ACTION_COOLING);
-			this->action->addEnumString(ACTION_FAN);
+			this->action2->addEnumString(ACTION_COOLING2);//cooling
+			this->action2->addEnumString(ACTION_FAN2);//fan
 		}
-		this->action->setMqttSendChangedValues(true);
-		this->action->setReadOnly(true);
-		this->addProperty(action);
+		this->action2->setMqttSendChangedValues(true);
+		this->action2->setReadOnly(true);
+		this->addProperty(action2);
+
+
+
+
+
+
 
 
 		if (getThermostatModel() == MODEL_BHT_002_GBLW) {
@@ -722,8 +890,28 @@ public:
     	if (state != nullptr) {
     		bool heating = false;
     		bool cooling = false;
+        bool activated = false;
+        
     		if ((isSupportingHeatingRelay()) && (state != nullptr)) {
     			heating = digitalRead(PIN_STATE_HEATING_RELAY);
+         if (heating == true) {                                                     //Hakspiel
+            if (State_temp2 <= 21) activated = true;
+            State_temp = "24";
+            State_temp2 = 22;
+         }else{
+          State_temp = "20";
+          State_temp2 = 20;
+         }
+//         if ( activated = true){                                                                                                                                                                                      //Hakspiel
+//            this->targetTemperature = new WTargetTemperatureProperty(State_temp, TITL_TARGETTEMPERATURE);//, 12.0, 28.0);
+//            this->targetTemperature->setMultipleOf(getTemperaturePrecision());
+//            this->targetTemperature->setOnChange(std::bind(&WBecaDevice::onChangeTargetTemperature, this, std::placeholders::_1));
+//            //this->targetTemperature->setOnValueRequest([this](WProperty* p) {updateTargetTemperature();});
+//            this->targetTemperature->setMqttSendChangedValues(true);
+//            this->addProperty(targetTemperature);
+//            network->log()->trace(F("Beca settings targetTemperature done (%d)"), ESP.getMaxFreeBlockSize());
+//         }
+                
 				this->state->setString(heating ? STATE_HEATING : STATE_OFF);
     		} else if ((isSupportingCoolingRelay()) && (state != nullptr)) {
     			cooling = digitalRead(PIN_STATE_COOLING_RELAY);
@@ -765,6 +953,28 @@ public:
 			updateCurrentSchedulePeriod();
 			lastLongLoop=now;
 		}
+
+// to tasks only every 30 seconds                                                                                                 //Hakspiel
+    if (lastVeryLongLoop + 30000 < now ){
+    
+
+                   
+//          String stat_topic = network->getMqttTopic() + (String)"/" + String(MQTT_STAT) + (String)"/things/thermostat/state";
+//          network->publishMqtt((stat_topic).c_str(), State_temp);
+//
+//
+//          myipadress = network->getDeviceIp().toString().c_str();
+//          
+//          String stat_topic2 = network->getMqttTopic() + (String)"/" + String(MQTT_STAT) + (String)"/things/thermostat/ip";
+//          network->publishMqtt((stat_topic).c_str(), myipadress);
+      lastVeryLongLoop=now;
+    }
+   
+
+    
+
+
+
 
     	//Heartbeat
     	//long now = millis();
@@ -1305,98 +1515,484 @@ public:
     	return schedulesDayOffset->getByte();
     }
 
-	bool sendMqttHassAutodiscover(bool removeDiscovery){
-		if (!hasDevicesWithHassAutodiscoverSupport()) return true;
-		network->log()->notice(F("sendMqttHassAutodiscover-%s"), (removeDiscovery ? "remove" : "add"));
-		// https://www.home-assistant.io/docs/mqtt/discovery/
-		String topic=F("homeassistant/climate/");
-		String unique_id = (String)network->getIdx();
-		unique_id.concat(F("_climate"));
-		topic.concat(unique_id);
-		topic.concat(F("/config"));
-		WStringStream* response = network->getMQTTResponseStream();
-		response->flush();
-		char str_temp[6];
-		dtostrf(this->temperaturePrecision->getDouble(), 3, 1, str_temp);
-		if (!removeDiscovery){
-			if (getThermostatModel() == MODEL_BHT_002_GBLW ){
-				response->printf_P(MQTT_HASS_AUTODISCOVERY_CLIMATE,
-					network->getIdx(),
-					unique_id.c_str(),
-					network->getMacAddress().c_str(),
-					network->getIdx(),
-					network->getApplicationName().c_str(),
-					network->getFirmwareVersion().c_str(),
-					network->getMqttTopic(),
-					str_temp 
-				);
-			} else if (getThermostatModel() == MODEL_BAC_002_ALW ){
-				response->printf_P(MQTT_HASS_AUTODISCOVERY_AIRCO,
-					network->getIdx(),
-					unique_id.c_str(),
-					network->getMacAddress().c_str(),
-					network->getIdx(),
-					network->getApplicationName().c_str(),
-					network->getFirmwareVersion().c_str(),
-					network->getMqttTopic(),
-					str_temp 
-				);
-			}
-		}
-		if (!network->publishMqtt(topic.c_str(), response, true)) return false;
-		response->flush();
+  bool sendMqttHassAutodiscover(bool removeDiscovery){
+    if (!hasDevicesWithHassAutodiscoverSupport()) return true;
+    network->log()->notice(F("sendMqttHassAutodiscover-%s"), (removeDiscovery ? "remove" : "add"));
+    // https://www.home-assistant.io/docs/mqtt/discovery/
+    String topic=F("homeassistant/climate/");
+    String unique_id = (String)network->getIdx();
+    unique_id.concat(F("_climate"));
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    WStringStream* response = network->getMQTTResponseStream();
+    response->flush();
+    char str_temp[6];
+    dtostrf(this->temperaturePrecision->getDouble(), 3, 1, str_temp);
+    if (!removeDiscovery){
+      if (getThermostatModel() == MODEL_BHT_002_GBLW ){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_CLIMATE,
+          network->getIdx(),
+          unique_id.c_str(),
+          network->getMacAddress().c_str(),
+          network->getIdx(),
+          network->getApplicationName().c_str(),
+          network->getFirmwareVersion().c_str(),
+         // network->getDeviceIp().toString().c_str(),                                                                        // Hakspiel
+          network->getMqttTopic(),
+          str_temp 
+        );
+      } else if (getThermostatModel() == MODEL_BAC_002_ALW ){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_AIRCO,
+          network->getIdx(),
+          unique_id.c_str(),
+          network->getMacAddress().c_str(),
+          network->getIdx(),
+          network->getApplicationName().c_str(),
+          network->getFirmwareVersion().c_str(),
+          network->getMqttTopic(),
+          str_temp 
+        );
+      }
+    }
+    if (!network->publishMqtt(topic.c_str(), response, true)) return false;
+    response->flush();
 
-		unique_id = (String)network->getIdx();
-		unique_id.concat(F("_sensor"));
-		topic=F("homeassistant/sensor/"); 
-		topic.concat(unique_id);
-		topic.concat(F("/config"));
-		if (!removeDiscovery){
-				response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR,
-				network->getIdx(),
-				unique_id.c_str(),
-				network->getMacAddress().c_str(),
-				network->getMqttTopic()
-			);
-		}
-		if (!network->publishMqtt(topic.c_str(), response, true)) return false;
-		response->flush();
 
-		if (this->floorSensor->getBoolean()){
-			unique_id = (String)network->getIdx();
-			unique_id.concat(F("_floorsensor"));
-			topic=F("homeassistant/sensor/"); 
-			topic.concat(unique_id);
-			topic.concat(F("/config"));
-			if (!removeDiscovery){
-				response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSORFLOOR,
-					network->getIdx(),
-					unique_id.c_str(),
-					network->getMacAddress().c_str(),
-					network->getMqttTopic()
-				);
-			}
-			if (!network->publishMqtt(topic.c_str(), response, true)) return false;
-			response->flush();
-		}
 
-		unique_id = (String)network->getIdx();
-		unique_id.concat(F("_rssi"));
-		topic=F("homeassistant/sensor/"); 
-		topic.concat(unique_id);
-		topic.concat(F("/config"));
-		if (!removeDiscovery){
-			response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSORRSSI,
-				network->getIdx(),
-				unique_id.c_str(),
-				network->getMacAddress().c_str(),
-				network->getMqttTopic()
-			);
-		}
-		if (!network->publishMqtt(topic.c_str(), response, true)) return false;
-		response->flush();
-		return true;
-	}
+//    unique_id = (String)network->getIdx();
+//    unique_id.concat(F("_SHT_Temp"));
+//    topic=F("homeassistant/sensor/"); 
+//    topic.concat(unique_id);
+//    topic.concat(F("/config"));
+//    if (!removeDiscovery){
+//        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_SHT_TEMP,
+//        network->getIdx(),
+//        unique_id.c_str(),
+//        network->getMacAddress().c_str(),
+//        network->getMqttTopic()
+//      );
+//    }   
+//   if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+//   response->flush();
+//
+//
+//
+//    unique_id = (String)network->getIdx();
+//    unique_id.concat(F("_SHT_Hum"));
+//    topic=F("homeassistant/sensor/"); 
+//    topic.concat(unique_id);
+//    topic.concat(F("/config"));
+//    if (!removeDiscovery){
+//        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_SHT_HUM,
+//        network->getIdx(),
+//        unique_id.c_str(),
+//        network->getMacAddress().c_str(),
+//        network->getMqttTopic(),
+//        "%"
+//      );
+//    }
+//   if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+//   response->flush();
+//
+//
+//
+//    unique_id = (String)network->getIdx();
+//    unique_id.concat(F("_SHT_Dewpoint"));
+//    topic=F("homeassistant/sensor/"); 
+//    topic.concat(unique_id);
+//    topic.concat(F("/config"));
+//    if (!removeDiscovery){
+//        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_SHT_DEWPOINT,
+//        network->getIdx(),
+//        unique_id.c_str(),
+//        network->getMacAddress().c_str(),
+//        network->getMqttTopic()
+//      );
+//    }
+//   if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+//   response->flush();
+
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_ip_address"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_IP,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }
+    if (!network->publishMqtt(topic.c_str(), response, true)) return false;                 //Hakspiel
+    response->flush();
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_sensor"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }
+
+   if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+   response->flush();
+
+
+
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_targetSensor"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_TARGET,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }
+
+   if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+   response->flush();
+
+
+
+
+
+//    unique_id = (String)network->getIdx();
+//    unique_id.concat(F("_StatusSensor"));
+//    topic=F("homeassistant/sensor/"); 
+//    topic.concat(unique_id);
+//    topic.concat(F("/config"));
+//    if (!removeDiscovery){
+//        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_STATUS,
+//        network->getIdx(),
+//        unique_id.c_str(),
+//        network->getMacAddress().c_str(),
+//        network->getMqttTopic()
+//      );
+//    }
+//       if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+//   response->flush();
+
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_RelayStatus"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_STATUS2,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }
+       if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+   response->flush();
+
+
+
+
+
+
+    if (this->floorSensor->getBoolean()){
+      unique_id = (String)network->getIdx();
+      unique_id.concat(F("_floorsensor"));
+      topic=F("homeassistant/sensor/"); 
+      topic.concat(unique_id);
+      topic.concat(F("/config"));
+      if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSORFLOOR,
+          network->getIdx(),
+          unique_id.c_str(),
+          network->getMacAddress().c_str(),
+          network->getMqttTopic()
+        );
+      }
+      if (!network->publishMqtt(topic.c_str(), response, true)) return false;                 //Hakspiel
+      response->flush();
+    }
+
+
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_rssi"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+      response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSORRSSI,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }
+    if (!network->publishMqtt(topic.c_str(), response, true)) return false;                 //Hakspiel
+    response->flush();
+
+
+    return true;
+  }
+
+
+  bool sendMqttHassAutodiscover2(bool removeDiscovery){
+    if (!hasDevicesWithHassAutodiscoverSupport()) return true;
+    network->log()->notice(F("sendMqttHassAutodiscover-%s"), (removeDiscovery ? "remove" : "add"));
+    // https://www.home-assistant.io/docs/mqtt/discovery/
+    String topic=F("homeassistant/climate/");
+    String unique_id = (String)network->getIdx();
+    unique_id.concat(F("_climate"));
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    WStringStream* response = network->getMQTTResponseStream();
+    response->flush();
+    char str_temp[6];
+    dtostrf(this->temperaturePrecision->getDouble(), 3, 1, str_temp);
+    if (!removeDiscovery){
+      if (getThermostatModel() == MODEL_BHT_002_GBLW ){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_CLIMATE,
+          network->getIdx(),
+          unique_id.c_str(),
+          network->getMacAddress().c_str(),
+          network->getIdx(),
+          network->getApplicationName().c_str(),
+          network->getFirmwareVersion().c_str(),
+         // network->getDeviceIp().toString().c_str(),                                                                        // Hakspiel
+          network->getMqttTopic(),
+          str_temp 
+        );
+      } else if (getThermostatModel() == MODEL_BAC_002_ALW ){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_AIRCO,
+          network->getIdx(),
+          unique_id.c_str(),
+          network->getMacAddress().c_str(),
+          network->getIdx(),
+          network->getApplicationName().c_str(),
+          network->getFirmwareVersion().c_str(),
+          network->getMqttTopic(),
+          str_temp 
+        );
+      }
+    }
+    if (!network->publishMqtt(topic.c_str(), response, true)) return false;
+    response->flush();
+
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_SHT_Temp"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_SHT_TEMP,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }   
+   if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+   response->flush();
+
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_SHT_Hum"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_SHT_HUM,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic(),
+        "%"
+      );
+    }
+   if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+   response->flush();
+
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_SHT_Dewpoint"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_SHT_DEWPOINT,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }
+   if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+   response->flush();
+
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_ip_address"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_IP,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }
+    if (!network->publishMqtt(topic.c_str(), response, true)) return false;                 //Hakspiel
+    response->flush();
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_sensor"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }
+
+   if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+   response->flush();
+
+
+
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_targetSensor"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_TARGET,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }
+
+   if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+   response->flush();
+
+
+
+
+//
+//    unique_id = (String)network->getIdx();
+//    unique_id.concat(F("_StatusSensor"));
+//    topic=F("homeassistant/sensor/"); 
+//    topic.concat(unique_id);
+//    topic.concat(F("/config"));
+//    if (!removeDiscovery){
+//        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_STATUS,
+//        network->getIdx(),
+//        unique_id.c_str(),
+//        network->getMacAddress().c_str(),
+//        network->getMqttTopic()
+//      );
+//    }
+//       if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+//   response->flush();
+
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_RelayStatus"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSOR_STATUS2,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }
+       if (!network->publishMqtt(topic.c_str(), response, true)) return false;                  //Hakspiel
+   response->flush();
+
+
+
+
+
+
+
+    if (this->floorSensor->getBoolean()){
+      unique_id = (String)network->getIdx();
+      unique_id.concat(F("_floorsensor"));
+      topic=F("homeassistant/sensor/"); 
+      topic.concat(unique_id);
+      topic.concat(F("/config"));
+      if (!removeDiscovery){
+        response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSORFLOOR,
+          network->getIdx(),
+          unique_id.c_str(),
+          network->getMacAddress().c_str(),
+          network->getMqttTopic()
+        );
+      }
+      if (!network->publishMqtt(topic.c_str(), response, true)) return false;
+      response->flush();
+    }
+
+
+
+
+    unique_id = (String)network->getIdx();
+    unique_id.concat(F("_rssi"));
+    topic=F("homeassistant/sensor/"); 
+    topic.concat(unique_id);
+    topic.concat(F("/config"));
+    if (!removeDiscovery){
+      response->printf_P(MQTT_HASS_AUTODISCOVERY_SENSORRSSI,
+        network->getIdx(),
+        unique_id.c_str(),
+        network->getMacAddress().c_str(),
+        network->getMqttTopic()
+      );
+    }
+    if (!network->publishMqtt(topic.c_str(), response, true)) return false;
+    response->flush();
+
+
+    return true;
+  }
+
 
 protected:
 
@@ -1437,6 +2033,7 @@ private:
 	WProperty* mode;
 	WProperty* preset;
 	WProperty* action;
+  WProperty* action2;
 	WProperty* schedulesMode;
 	WProperty* holdState;
     WProperty* systemMode;
@@ -1460,7 +2057,7 @@ private:
 	WProperty *mcuId;
     THandlerFunction onConfigurationRequest;
 	THandlerFunction onPowerButtonOn;
-    unsigned long lastNotify, lastScheduleNotify, lastLongLoop;
+    unsigned long lastNotify, lastScheduleNotify, lastLongLoop, lastVeryLongLoop;
     bool schedulesChanged;
 	int currentSchedulePeriod;
 	bool timeIsRequested, timeIsRequestedLocaltime, timeIsRequestedSendZeroSecs;
@@ -2141,7 +2738,10 @@ private:
 		}
 
 		// mode to action
-		if (this->mode->equalsString(MODE_OFF)) this->action->setString(ACTION_OFF);
+		if (this->mode->equalsString(MODE_OFF)){
+		  this->action->setString(ACTION_OFF);
+      this->action2->setString(ACTION_OFF2);
+		}
 		else if (getThermostatModel() == MODEL_BAC_002_ALW) {
 			if (this->state->equalsString(STATE_OFF)){
 				this->action->setString(ACTION_IDLE);
@@ -2155,7 +2755,11 @@ private:
 		} else if (getThermostatModel() == MODEL_BHT_002_GBLW){
 			if (this->state->equalsString(STATE_OFF)){
 				this->action->setString(ACTION_IDLE);
-			} else this->action->setString(ACTION_HEATING);
+        this->action2->setString(ACTION_IDLE2);
+			} else {
+			this->action->setString(ACTION_HEATING);
+      this->action2->setString(ACTION_HEATING2);
+			}
 		}
 	}
 

@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
-#include "../lib/WAdapter/WAdapter/WDevice.h"
+#include "WDevice.h"
 
 const char* ID_LOGDEVICE PROGMEM = "logging";
 const char* NAME_LOGDEVICE PROGMEM = "Logging";

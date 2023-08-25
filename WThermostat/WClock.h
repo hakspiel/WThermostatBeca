@@ -15,8 +15,8 @@
 #include <TimeLib.h>
 #include <WiFiUdp.h>
 
-#include "../lib/WAdapter/WAdapter/WDevice.h"
-#include "../lib/WAdapter/WAdapter/WNetwork.h"
+#include "WDevice.h"
+#include "WNetwork.h"
 #include "Arduino.h"
 
 //#define NTPTESTSTART 1585555170 // Full Hour Test
