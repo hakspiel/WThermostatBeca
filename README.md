@@ -1,6 +1,6 @@
 # WThermostat - Fork
 
-FAS forked <https://github.com/fashberg/WThermostatBeca> 
+FAS  <https://github.com/fashberg/WThermostatBeca> forked
 
 from <https://github.com/klausahrenberg/WThermostatBeca> with some new features.
 
